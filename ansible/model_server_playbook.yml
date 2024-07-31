@@ -88,6 +88,51 @@
         content: |
           version: '3.8'
           services:
+            kepler:
+              image: quay.io/sustainable_computing_io/kepler:latest
+              container_name: kepler
+              restart: always
+              ports:
+                - "8888:8888"
+              privileged: true
+              pid: "host"
+              network_mode: "host"
+              environment:
+                - EXPOSE_ESTIMATED_IDLE_POWER_METRICS=true
+                - ENABLE_PROCESS_METRICS=true
+              volumes:
+                - type: bind
+                  source: /proc
+                  target: /proc
+                - type: bind
+                  source: /sys
+                  target: /sys
+                - type: bind
+                  source: /lib/modules
+                  target: /lib/modules
+                - type: bind
+                  source: /usr/src
+                  target: /usr/src
+                - type: bind
+                  source: /etc
+                  target: /etc
+                - kepler-tmp:/tmp
+              cap_add:
+                - ALL
+              entrypoint:
+                - /usr/bin/bash
+                - -c
+              command:
+                - echo "Waiting for estimator socket";
+                  until [[ -e /tmp/estimator.sock ]]; do
+                  echo " ... waiting for socket";
+                  sleep 1;
+                  done;
+                  echo "starting kepler";
+                  set -x;
+                  /usr/bin/kepler
+                  -address="0.0.0.0:8888"
+                  -v="8"
             estimator:
               entrypoint:
                 - python3.8
@@ -97,7 +142,7 @@
               image: quay.io/sustainable_computing_io/kepler_model_server:v0.7.7
               volumes:
                 - estimator-mnt:/mnt
-                - /tmp:/tmp
+                - kepler-tmp:/tmp
               network_mode: "host"
               environment:
                 - NODE_TOTAL_ESTIMATOR={{ node_total_estimator }}
@@ -122,6 +167,7 @@
                 - NODE_TOTAL_INIT_URL={{ node_total_init_url }}
                 - NODE_COMPONENTS_INIT_URL={{ node_components_init_url }}
           volumes:
+            kepler-tmp:
             estimator-mnt:
             model-server-mnt:
         dest: "{{ compose_path }}"
@@ -149,6 +195,22 @@
 
     # Note instead of sleeping, wait until Docker Compose Services are running
     # Specifically, wait until kepler metrics are available and uses trained_models not rapl
-    - name: Wait for Model Server Services to Stabilize
+    # check if kepler vm is accessible
+    - name: Wait for VM Kepler and Model Server to be stabilized
       ansible.builtin.pause:
-        seconds: 60
+      seconds: 60
+    # check if model server logs are operating as expected
+    # for now i will just output logs    
+    - name: Retrieve Model Server Logs
+      ansible.builtin.shell: |
+        docker compose logs
+      register: dc_logs
+
+    - name: Output docker compose Logs
+      ansible.builtin.debug:
+        var: dc_logs.stdout
+    
+    - name: Check endpoint active
+      ansible.builtin.command: curl http://localhost:8888/metrics
+
+    # check if a well known vm metric can be reached
