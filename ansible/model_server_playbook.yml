@@ -208,23 +208,6 @@
     - name: Retrieve Model Server Logs
       ansible.builtin.shell: |
         docker compose -f {{ compose_path }} logs
-        TIMEOUT=300 # Default timeout is 300 seconds (5 minutes)
-        INTERVAL=10 # Check interval is 10 seconds
-        END=$((SECONDS+TIMEOUT))
-
-        while [ $SECONDS -lt $END ]; do
-          MATCH=$(docker compose logs | grep "Using Power Model")
-          if [ $? -eq 0 ]; then
-            echo "Found 'Using Power Model'"
-            echo $MATCH
-            exit 0
-          fi
-          echo "Not found yet, sleeping for $INTERVAL seconds"
-          sleep $INTERVAL
-        done
-
-        echo "Timeout reached, 'Using Power Model' not found"
-        exit 1
     
     - name: Check endpoint active
       ansible.builtin.shell: |
