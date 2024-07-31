@@ -198,12 +198,11 @@
     # check if kepler vm is accessible
     - name: Wait for VM Kepler and Model Server to be stabilized
       ansible.builtin.pause:
-      seconds: 60
+        seconds: 60
     # check if model server logs are operating as expected
     # for now i will just output logs    
     - name: Retrieve Model Server Logs
-      ansible.builtin.shell: |
-        docker compose logs
+      ansible.builtin.shell: docker compose logs
       register: dc_logs
 
     - name: Output docker compose Logs
