@@ -208,6 +208,11 @@
     - name: Retrieve Model Server Logs
       ansible.builtin.shell: |
         docker compose -f {{ compose_path }} logs
+      register: dc_logs
+
+    - name: Output Logs
+      ansible.builtin.debug:
+        var: dc_logs.stdout
     
     - name: Check endpoint active
       ansible.builtin.shell: |
