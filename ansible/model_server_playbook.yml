@@ -202,7 +202,7 @@
     # check if model server logs are operating as expected
     # for now i will just output logs    
     - name: Retrieve Model Server Logs
-      ansible.builtin.shell: docker compose logs
+      ansible.builtin.shell: docker compose -f {{ compose_path }} logs
       register: dc_logs
 
     - name: Output docker compose Logs
