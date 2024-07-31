@@ -174,7 +174,11 @@
 
     - name: Check Docker Compose file
       ansible.builtin.command: cat {{ compose_path }}
-      ignore_errors: true
+      register: docker_compose_file
+
+    - name: Output Docker Compose file
+      ansible.builtin.debug:
+        var: docker_compose_file.stdout
 
     - name: Pull Images
       ansible.builtin.command:
