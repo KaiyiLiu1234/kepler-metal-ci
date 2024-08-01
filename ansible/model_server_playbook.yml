@@ -100,6 +100,13 @@
               environment:
                 - EXPOSE_ESTIMATED_IDLE_POWER_METRICS=true
                 - ENABLE_PROCESS_METRICS=true
+                - MODEL_SERVER_URL="http://model-server:8100"
+                - MODEL_SERVER_ENABLE=true
+                - MODEL_CONFIG= |
+                    NODE_TOTAL_ESTIMATOR={{ node_total_estimator }}
+                    NODE_COMPONENTS_ESTIMATOR={{ node_components_estimator }}
+                    NODE_TOTAL_INIT_URL={{ node_total_init_url }}
+                    NODE_COMPONENTS_INIT_URL={{ node_components_init_url }} 
               volumes:
                 - type: bind
                   source: /proc
@@ -145,10 +152,15 @@
                 - kepler-tmp:/tmp
               network_mode: "host"
               environment:
-                - NODE_TOTAL_ESTIMATOR={{ node_total_estimator }}
-                - NODE_COMPONENTS_ESTIMATOR={{ node_components_estimator }}
-                - NODE_TOTAL_INIT_URL={{ node_total_init_url }}
-                - NODE_COMPONENTS_INIT_URL={{ node_components_init_url }} 
+                - ENABLE_PROCESS_METRICS=true
+                - EXPOSE_ESTIMATED_IDLE_POWER_METRICS=true
+                - MODEL_SERVER_URL="http://model-server:8100"
+                - MODEL_SERVER_ENABLE=true
+                - MODEL_CONFIG= |
+                    NODE_TOTAL_ESTIMATOR={{ node_total_estimator }}
+                    NODE_COMPONENTS_ESTIMATOR={{ node_components_estimator }}
+                    NODE_TOTAL_INIT_URL={{ node_total_init_url }}
+                    NODE_COMPONENTS_INIT_URL={{ node_components_init_url }} 
             model-server:
               entrypoint:
                 - python3.8
@@ -162,10 +174,15 @@
                 - model-server-mnt:/mnt
               network_mode: "host"
               environment:
-                - NODE_TOTAL_ESTIMATOR={{ node_total_estimator }}
-                - NODE_COMPONENTS_ESTIMATOR={{ node_components_estimator }}
-                - NODE_TOTAL_INIT_URL={{ node_total_init_url }}
-                - NODE_COMPONENTS_INIT_URL={{ node_components_init_url }}
+                - ENABLE_PROCESS_METRICS=true
+                - EXPOSE_ESTIMATED_IDLE_POWER_METRICS=true
+                - MODEL_SERVER_URL="http://model-server:8100"
+                - MODEL_SERVER_ENABLE=true
+                - MODEL_CONFIG= |
+                    NODE_TOTAL_ESTIMATOR={{ node_total_estimator }}
+                    NODE_COMPONENTS_ESTIMATOR={{ node_components_estimator }}
+                    NODE_TOTAL_INIT_URL={{ node_total_init_url }}
+                    NODE_COMPONENTS_INIT_URL={{ node_components_init_url }} 
           volumes:
             kepler-tmp:
             estimator-mnt:
