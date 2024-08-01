@@ -4,27 +4,6 @@
   vars:
     compose_path: /tmp/model-server-docker-compose.yml
   tasks:
-    # - name: Check Docker Installed
-    #   ansible.builtin.command: docker --version
-    #   register: docker_version
-    #   ignore_errors: yes
-
-    # - name: Install Docker
-    #   ansible.builtin.dnf:
-    #     name: docker
-    #     state: present
-    #   register: install_docker
-    #   changed_when: install_docker == 0
-    #   failed_when: install_docker != 0
-    #   when: docker_version.rc != 0
-
-    # - name: Enable and Start Docker Service
-    #   ansible.builtin.systemd: 
-    #     name: docker
-    #     enabled: yes
-    #     state: started
-    #   when: docker_version.rc == 0 or install_docker.changed
-
     - name: Check Podman Installed
       ansible.builtin.command: which podman
       register: podman_version
@@ -34,9 +13,6 @@
       ansible.builtin.dnf:
         name: podman
         state: present
-      # register: podman_install
-      # changed_when: podman_install == 0
-      # failed_when: podman_install != 0
       when: podman_version.rc != 0
 
     - name: Check podman-docker Installed
@@ -81,8 +57,6 @@
         enabled: yes
         state: started
 
-      # add kepler service if necessary
-      # change v0.7.7 to latest
     - name: Create Docker Compose Model Server file
       copy:
         content: |
@@ -100,8 +74,6 @@
               environment:
                 - EXPOSE_ESTIMATED_IDLE_POWER_METRICS=true
                 - ENABLE_PROCESS_METRICS=true
-                - MODEL_SERVER_URL="http://model-server:8100"
-                - MODEL_SERVER_ENABLE=true
                 - MODEL_CONFIG= |
                     NODE_TOTAL_ESTIMATOR={{ node_total_estimator }}
                     NODE_COMPONENTS_ESTIMATOR={{ node_components_estimator }}
@@ -152,10 +124,6 @@
                 - kepler-tmp:/tmp
               network_mode: "host"
               environment:
-                - ENABLE_PROCESS_METRICS=true
-                - EXPOSE_ESTIMATED_IDLE_POWER_METRICS=true
-                - MODEL_SERVER_URL="http://model-server:8100"
-                - MODEL_SERVER_ENABLE=true
                 - MODEL_CONFIG= |
                     NODE_TOTAL_ESTIMATOR={{ node_total_estimator }}
                     NODE_COMPONENTS_ESTIMATOR={{ node_components_estimator }}
@@ -174,10 +142,6 @@
                 - model-server-mnt:/mnt
               network_mode: "host"
               environment:
-                - ENABLE_PROCESS_METRICS=true
-                - EXPOSE_ESTIMATED_IDLE_POWER_METRICS=true
-                - MODEL_SERVER_URL="http://model-server:8100"
-                - MODEL_SERVER_ENABLE=true
                 - MODEL_CONFIG= |
                     NODE_TOTAL_ESTIMATOR={{ node_total_estimator }}
                     NODE_COMPONENTS_ESTIMATOR={{ node_components_estimator }}
@@ -213,25 +177,23 @@
       changed_when: deploy_output.rc == 0
       failed_when: deploy_output.rc != 0
       when: compose_pull.changed
-
-    # Note instead of sleeping, wait until Docker Compose Services are running
-    # Specifically, wait until kepler metrics are available and uses trained_models not rapl
-    # check if kepler vm is accessible
-    - name: Wait for VM Kepler and Model Server to be stabilized
-      ansible.builtin.pause:
-        seconds: 60
-    # check if model server logs are operating as expected
-    # for now i will just output logs    
-    - name: Retrieve Model Server Logs
+        
+    - name: Check if Model Server is being used
       ansible.builtin.shell: |
-        docker compose -f {{ compose_path }} logs
-      register: dc_logs
+        for i in {1..10}; do
+          echo "Checking Model Server in use. Attempt $i"
+          if docker compose -f {{ compose_path }} logs | grep "Using the EstimatorSidecar"; then
+            echo "In Use"
+            exit 0
+          fi
+          sleep 10
+        done
+        echo "Model Server Estimator not in use"
+        exit 1
+      register: model_server_start
+      failed_when: model_server_start.rc != 0
 
-    - name: Output Logs
-      ansible.builtin.debug:
-        var: dc_logs.stdout
-    
-    - name: Check endpoint active
+    - name: Check if Kepler is active
       ansible.builtin.shell: |
         for i in {1..5}; do
           echo "Attempt $i"
