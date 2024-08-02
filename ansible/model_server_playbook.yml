@@ -193,6 +193,10 @@
       register: model_server_start
       failed_when: model_server_start.rc != 0
 
+    - name: Output result
+      ansible.builtin.debug:
+        var: model_server_start.stdout_lines
+
     - name: Check if Kepler is active
       ansible.builtin.shell: |
         for i in {1..5}; do
@@ -207,3 +211,7 @@
         exit 1
       register: kepler_start
       failed_when: kepler_start.rc != 0
+
+    - name: Output result
+      ansible.builtin.debug:
+        var: kepler_start.stdout_lines
