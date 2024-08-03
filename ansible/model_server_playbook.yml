@@ -126,6 +126,8 @@
                 - kepler-tmp:/tmp
               network_mode: "host"
               environment:
+                - EXPOSE_ESTIMATED_IDLE_POWER_METRICS=true
+                - ENABLE_PROCESS_METRICS=true
                 - MODEL_SERVER_ENABLE=true
                 - MODEL_SERVER_URL="http://model-server:8100"
                 - MODEL_CONFIG= |
@@ -146,6 +148,8 @@
                 - model-server-mnt:/mnt
               network_mode: "host"
               environment:
+                - EXPOSE_ESTIMATED_IDLE_POWER_METRICS=true
+                - ENABLE_PROCESS_METRICS=true
                 - MODEL_SERVER_ENABLE=true
                 - MODEL_SERVER_URL="http://model-server:8100"
                 - MODEL_CONFIG= |
