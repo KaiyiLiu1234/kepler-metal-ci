@@ -1,8 +1,8 @@
 name: Equinix Metal Sweep
 
 on:
-  schedule:
-    - cron: '0 15 * * *' # before validation action
+  # schedule:
+  #   - cron: '0 15 * * *' # before validation action
   workflow_dispatch: 
 
 jobs:
