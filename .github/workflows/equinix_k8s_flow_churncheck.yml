@@ -19,8 +19,8 @@ on:
         description: 'metro location'
         required: false
         default: 'da'
-  schedule:
-    - cron: '0 18 * * *'
+  # schedule:
+  #   - cron: '0 18 * * *'
 
 permissions:
   pull-requests: write
