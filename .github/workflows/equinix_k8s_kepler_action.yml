@@ -1,7 +1,7 @@
 name: Equinix k8s Action integration with kepler action
 
 on:
-  pull_request:
+  # pull_request:
   workflow_dispatch:
     inputs:
       termination_time:
